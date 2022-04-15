@@ -12,7 +12,7 @@ namespace CapstoneAPI_new.Services
         public static string server = "mysql8001.site4now.net";
         public static string dbName = "db_a84892_cmac23";
         public static string user = "a84892_cmac23";
-        public static string password = "";
+        public static string password = "gecko2022";
         public static string port = "3306";
 
 
