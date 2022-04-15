@@ -27,6 +27,10 @@ namespace CapstoneAPI_new.Controllers
             ConnectionService.CloseConnection();
         }
 
+        //-------------------------------------------------------------
+        //  ACCOUNT MANAGEMENT
+        // ------------------------------------------------------------
+
         [HttpPost("login")]
         public object login([FromBody] UserLogin user)
         {
@@ -53,6 +57,18 @@ namespace CapstoneAPI_new.Controllers
             return DatabaseService.updateEmail(user);
         }
 
+        [HttpPost("user/update/username")]
+        public object updateUsername([FromBody] UpdateUserLogin user)
+        {
+            return DatabaseService.updateUsername(user);
+        }
+
+        [HttpPost("user/update/password")]
+        public object updatePassword([FromBody] UpdateUserLogin user)
+        {
+            return DatabaseService.updatePassword(user);
+        }
+
         [HttpPost("noresults")]
         public object noResultsRequest([FromBody] DatabaseQuery query)
         {
@@ -60,6 +76,13 @@ namespace CapstoneAPI_new.Controllers
 
             return new OkResult();
         }
+
+
+
+
+        //-------------------------------------------------------------
+        //  PLANNER MANAGEMENT
+        // ------------------------------------------------------------
 
         [HttpPost("planner/entries/add")]
         public object addPlannerEntry([FromBody] PlannerEntry query)
@@ -93,16 +116,12 @@ namespace CapstoneAPI_new.Controllers
             return new OkResult();
         }
 
-        [HttpGet("todo/list")]
-        public object getList([FromBody] DatabaseQuery query)
-        {
-            var toDoList = new List<ListEntry>();
 
-            toDoList = DatabaseService.toDoEntries(query.query);
 
-            var json = JsonSerializer.Serialize(toDoList);
+        //-------------------------------------------------------------
+        //  TO DO LIST MANAGEMENT
+        // ------------------------------------------------------------
 
-            return new ContentResult { Content = json, StatusCode = 200, ContentType = "text/json" };
-        }
+
     }
 }

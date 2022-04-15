@@ -109,28 +109,87 @@ namespace CapstoneAPI_new.Services
             return result;
         }
 
-        public static void updateEmail(UpdateUserLogin user)
+        public static object updateEmail(UpdateUserLogin user)
         {
             var result = new ContentResult { Content = "{\"text\": \"Incorrect password\"}", StatusCode = 200, ContentType = "application/json" };
 
             ConnectionService.OpenConnection();
 
-            string query = "SELECT * FROM db_a84892_cmac23.account WHERE userid = '" + user.userId + "'";
+            string query = "SELECT password FROM db_a84892_cmac23.account WHERE userid = " + user.userId;
             var results = new MySqlCommand(query, ConnectionService.connection);
             var reader = results.ExecuteReader();
 
-            if (!reader.HasRows)
-            {
-                result = new ContentResult { Content = "{\"text\": \"No user found\"}", StatusCode = 200, ContentType = "application/json" };
-            }
-            else
+            if (reader.HasRows)
             {
                 reader.Read();
 
-                if (reader.GetString(2) == user.password)
+                if (reader.GetString(0) == user.password)
                 {
-                    int userId = reader.GetInt16(0);
-                    result = new ContentResult { Content = "{\"text\": \"Successful login\", \"userid\": " + userId + "}", StatusCode = 200, ContentType = "application/json" };
+                    query = "UPDATE db_a84892_cmac23.account SET email = '" + user.newEmail + "' WHERE userid = " + user.userId;
+                    results = new MySqlCommand(query, ConnectionService.connection);
+                    results.ExecuteReader();
+
+                    result = new ContentResult { Content = "{\"text\": \"Success\"}", StatusCode = 200, ContentType = "application/json" };
+                }
+
+                reader.Close();
+            }
+
+            ConnectionService.CloseConnection();
+            return result;
+        }
+
+        public static object updateUsername(UpdateUserLogin user)
+        {
+            var result = new ContentResult { Content = "{\"text\": \"Incorrect password\"}", StatusCode = 200, ContentType = "application/json" };
+
+            ConnectionService.OpenConnection();
+
+            string query = "SELECT password FROM db_a84892_cmac23.account WHERE userid = " + user.userId;
+            var results = new MySqlCommand(query, ConnectionService.connection);
+            var reader = results.ExecuteReader();
+
+            if (reader.HasRows)
+            {
+                reader.Read();
+
+                if (reader.GetString(0) == user.password)
+                {
+                    query = "UPDATE db_a84892_cmac23.account SET username = '" + user.newUsername + "' WHERE userid = " + user.userId;
+                    results = new MySqlCommand(query, ConnectionService.connection);
+                    results.ExecuteReader();
+
+                    result = new ContentResult { Content = "{\"text\": \"Success\"}", StatusCode = 200, ContentType = "application/json" };
+                }
+
+                reader.Close();
+            }
+
+            ConnectionService.CloseConnection();
+            return result;
+        }
+
+        public static object updatePassword(UpdateUserLogin user)
+        {
+            var result = new ContentResult { Content = "{\"text\": \"Incorrect password\"}", StatusCode = 200, ContentType = "application/json" };
+
+            ConnectionService.OpenConnection();
+
+            string query = "SELECT password FROM db_a84892_cmac23.account WHERE userid = " + user.userId;
+            var results = new MySqlCommand(query, ConnectionService.connection);
+            var reader = results.ExecuteReader();
+
+            if (reader.HasRows)
+            {
+                reader.Read();
+
+                if (reader.GetString(0) == user.password)
+                {
+                    query = "UPDATE db_a84892_cmac23.account SET password = '" + user.newPassword + "' WHERE userid = " + user.userId;
+                    results = new MySqlCommand(query, ConnectionService.connection);
+                    results.ExecuteReader();
+
+                    result = new ContentResult { Content = "{\"text\": \"Success\"}", StatusCode = 200, ContentType = "application/json" };
                 }
 
                 reader.Close();
@@ -219,25 +278,5 @@ namespace CapstoneAPI_new.Services
             noResult(query);
         }
 
-
-        public static List<ListEntry> toDoEntries(string query)
-        {
-            var toDoList = new List<ListEntry>();
-
-            ConnectionService.OpenConnection();
-
-            var results = new MySqlCommand(query, ConnectionService.connection);
-            var reader = results.ExecuteReader();
-
-            while (reader.Read())
-            {
-                toDoList.Add(new ListEntry { });
-            }
-
-            reader.Close();
-
-            ConnectionService.CloseConnection();
-            return toDoList;
-        }
     }
 }
