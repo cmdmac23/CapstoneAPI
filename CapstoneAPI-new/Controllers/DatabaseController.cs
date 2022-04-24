@@ -34,7 +34,7 @@ namespace CapstoneAPI_new.Controllers
         [HttpPost("login")]
         public object login([FromBody] UserLogin user)
         {
-            Console.WriteLine(user.username);
+            //Console.WriteLine(user.username);
 
             return DatabaseService.verifyUser(user);
         }
@@ -67,6 +67,12 @@ namespace CapstoneAPI_new.Controllers
         public object updatePassword([FromBody] UpdateUserLogin user)
         {
             return DatabaseService.updatePassword(user);
+        }
+
+        [HttpPost("user/update/points")]
+        public object updatePoints([FromBody] Response user)
+        {
+            return DatabaseService.updatePoints(user.userid, user.points);
         }
 
         [HttpPost("noresults")]
@@ -111,7 +117,7 @@ namespace CapstoneAPI_new.Controllers
         [HttpPost("planner/entries/complete")]
         public object updatePlannerCompleted([FromBody] PlannerEntry entry)
         {
-            DatabaseService.updatePlannerCompletion(entry.eventId, entry.completed);
+            DatabaseService.updatePlannerCompletion(entry.eventId, entry.completed, entry.difficulty, entry.userId);
 
             return new OkResult();
         }
@@ -121,6 +127,34 @@ namespace CapstoneAPI_new.Controllers
         //-------------------------------------------------------------
         //  TO DO LIST MANAGEMENT
         // ------------------------------------------------------------
+
+
+
+
+
+        //-------------------------------------------------------------
+        //  TO DO LIST MANAGEMENT
+        // ------------------------------------------------------------
+        
+        [HttpPost("rewards/unlock")]
+        public object unlockReward([FromBody] RewardItem rewardInfo)
+        {
+            DatabaseService.unlockReward(rewardInfo);
+
+            return new OkResult();
+        }
+
+        [HttpPost("rewards")]
+        public object getRewards([FromBody] RewardItem user)
+        {
+            var rewardArray = new RewardArray();
+
+            rewardArray = DatabaseService.getRewards(user);
+
+            var json = JsonSerializer.Serialize(rewardArray);
+
+            return new ContentResult { Content = json, StatusCode = 200, ContentType = "text/json" };
+        }
 
 
     }

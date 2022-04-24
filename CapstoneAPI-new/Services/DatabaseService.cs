@@ -32,7 +32,7 @@ namespace CapstoneAPI_new.Services
                 if (reader.GetString(2) == user.password)
                 {
                     int userId = reader.GetInt16(0);
-                    result = new ContentResult { Content = "{\"text\": \"Successful login\", \"userid\": " + userId + "}", StatusCode = 200, ContentType = "application/json" };
+                    result = new ContentResult { Content = "{\"text\": \"Successful login\", \"userid\": " + userId + ", \"points\": " + reader.GetInt16(4) + "}", StatusCode = 200, ContentType = "application/json" };
                 }
 
                 reader.Close();
@@ -125,6 +125,8 @@ namespace CapstoneAPI_new.Services
 
                 if (reader.GetString(0) == user.password)
                 {
+                    reader.Close();
+
                     query = "UPDATE db_a84892_cmac23.account SET email = '" + user.newEmail + "' WHERE userid = " + user.userId;
                     results = new MySqlCommand(query, ConnectionService.connection);
                     results.ExecuteReader();
@@ -155,6 +157,8 @@ namespace CapstoneAPI_new.Services
 
                 if (reader.GetString(0) == user.password)
                 {
+                    reader.Close();
+
                     query = "UPDATE db_a84892_cmac23.account SET username = '" + user.newUsername + "' WHERE userid = " + user.userId;
                     results = new MySqlCommand(query, ConnectionService.connection);
                     results.ExecuteReader();
@@ -185,6 +189,8 @@ namespace CapstoneAPI_new.Services
 
                 if (reader.GetString(0) == user.password)
                 {
+                    reader.Close();
+
                     query = "UPDATE db_a84892_cmac23.account SET password = '" + user.newPassword + "' WHERE userid = " + user.userId;
                     results = new MySqlCommand(query, ConnectionService.connection);
                     results.ExecuteReader();
@@ -199,6 +205,16 @@ namespace CapstoneAPI_new.Services
             return result;
         }
 
+        public static object updatePoints(int userid, int points)
+        {
+            var result = new ContentResult { Content = "{\"text\": \"Success\"}", StatusCode = 200, ContentType = "application/json" };
+
+            string query = "UPDATE db_a84892_cmac23.account SET points = " + points + " WHERE userid = " + userid;
+            noResult(query);
+
+            return result;
+        }
+
 
         public static void noResult(string query)
         {
@@ -209,12 +225,24 @@ namespace CapstoneAPI_new.Services
 
             ConnectionService.CloseConnection();
         }
-        
+
+        public static void noResultDouble(string query1, string query2)
+        {
+            ConnectionService.OpenConnection();
+
+            var results = new MySqlCommand(query1, ConnectionService.connection);
+            results.ExecuteNonQuery();
+            results = new MySqlCommand(query2, ConnectionService.connection);
+            results.ExecuteNonQuery();
+
+            ConnectionService.CloseConnection();
+        }
+
         public static object newPlannerEntry(PlannerEntry entry)
         {
             string query = null;
 
-            if (entry.reminder != null)
+            if (entry.reminder != null && entry.reminder != "")
                  query = "INSERT INTO db_a84892_cmac23.plannerevent (userid, title, descr, grp, dt, location, reminder, difficulty, fromUser, toUser, completed) VALUES('" + entry.userId + "', '" + entry.title + "', '" + entry.description + "', '" + entry.group + "', '" + entry.dateTime + "', '" + entry.location + "', '" + entry.reminder + "', '" + entry.difficulty + "', '" + entry.fromUser + "', '" + entry.toUser + "', '" + entry.completed + "');";
             else
                 query = "INSERT INTO db_a84892_cmac23.plannerevent (userid, title, descr, grp, dt, location, difficulty, fromUser, toUser, completed) VALUES('" + entry.userId + "', '" + entry.title + "', '" + entry.description + "', '" + entry.group + "', '" + entry.dateTime + "', '" + entry.location + "', '" + entry.difficulty + "', '" + entry.fromUser + "', '" + entry.toUser + "', '" + entry.completed + "');";
@@ -271,11 +299,54 @@ namespace CapstoneAPI_new.Services
             return entryArray;
         }
 
-        public static void updatePlannerCompletion(int eventid, int completed)
+        public static void updatePlannerCompletion(int eventid, int completed, int points, int userid)
         {
-            string query = "UPDATE db_a84892_cmac23.plannerevent SET completed = " + completed + " WHERE eventid = " + eventid + ";";
+            string query1 = "UPDATE db_a84892_cmac23.plannerevent SET completed = " + completed + " WHERE eventid = " + eventid + "; ";
+            string query2 = "UPDATE db_a84892_cmac23.account SET points = " + points + " WHERE userid = " + userid;
 
-            noResult(query);
+            //Console.WriteLine(query1 + query2);
+
+            //noResultDouble(query1, query2);
+
+            noResult(query1 + query2);
+
+            //updatePoints(userid, points);
+        }
+
+
+        public static void unlockReward(RewardItem rewardInfo)
+        {
+            string query1 = "INSERT INTO db_a84892_cmac23.rewards (userid, plantid, label) VALUES (" + rewardInfo.userId + ", " + rewardInfo.plantId + ", '" + rewardInfo.label + "'); ";
+            string query2 = "UPDATE db_a84892_cmac23.account SET points = points - " + rewardInfo.points + " WHERE userid = " + rewardInfo.userId + ";";
+
+            noResult(query1 + query2);
+        }
+
+        public static RewardArray getRewards(RewardItem user)
+        {
+            var rewardList = new List<RewardItem>();
+            RewardArray rewardArray = new RewardArray();
+
+            ConnectionService.OpenConnection();
+
+            string query = "SELECT * FROM db_a84892_cmac23.rewards WHERE userid = " + user.userId;
+           
+            var results = new MySqlCommand(query, ConnectionService.connection);
+            var reader = results.ExecuteReader();
+
+            while (reader.Read())
+            {
+                rewardList.Add(new RewardItem { userId = (int)reader[1], plantId = (int)reader[2], label = (string)reader[3] });
+            }
+
+            reader.Close();
+
+            ConnectionService.CloseConnection();
+
+            rewardArray.rewardArray = rewardList.ToArray();
+
+            return rewardArray;
+
         }
 
     }

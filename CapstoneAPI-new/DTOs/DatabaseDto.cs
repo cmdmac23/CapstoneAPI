@@ -15,6 +15,7 @@ namespace CapstoneAPI_new.DTOs
         public string text { get; set; }
         public int code { get; set; }
         public int userid { get; set; }
+        public int points { get; set; }
     }
 
     public class UserLogin
@@ -22,6 +23,7 @@ namespace CapstoneAPI_new.DTOs
         public string username { get; set; }
         public string password { get; set; }
         public string email { get; set; }
+        public string points { get; set; }
     }
 
     public class UpdateUserLogin
@@ -67,5 +69,18 @@ namespace CapstoneAPI_new.DTOs
     {
         public string name { get; set; }
         public Boolean completed { get; set; }
+    }
+
+    public class RewardItem
+    {
+        public int userId { get; set; }
+        public int plantId { get; set; }
+        public int points { get; set; }
+        public string label { get; set; }
+    }
+
+    public class RewardArray
+    {
+        public RewardItem[] rewardArray { get; set; }
     }
 }
