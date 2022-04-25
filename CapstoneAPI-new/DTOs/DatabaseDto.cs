@@ -57,18 +57,31 @@ namespace CapstoneAPI_new.DTOs
         public PlannerEntry[] entryArray { get; set; }
     }
 
-    public class List
+    public class ToDoList
     {
-        public int id { get; set; }
+        public int listId { get; set; }
+        public int userId { get; set; }
         public string title { get; set; }
-        public bool isShared { get; set; }
+        public string group { get; set; }
+        public string listItem { get; set; }
+        public int difficulty { get; set; }
+        public string fromUser { get; set; }
         public string toUser { get; set; }
+        public int completed { get; set; }
     }
 
-    public class ListEntry
+    public class ToDoListItem
     {
-        public string name { get; set; }
-        public Boolean completed { get; set; }
+        public int listItemId { get; set; }
+        public int listId { get; set; }
+        public string itemName { get; set; }
+        public int difficulty { get; set; }
+        public int completed { get; set; }
+    }
+
+    public class ToDoListArray
+    {
+        public ToDoList[] listArray { get; set; }
     }
 
     public class RewardItem

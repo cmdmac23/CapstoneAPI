@@ -326,6 +326,47 @@ namespace CapstoneAPI_new.Services
             noResult(query1 + query2);
         }
 
+        public static object newToDoList(ToDoList list)
+        {
+            string query = null;
+
+            query = "INSERT INTO db_a84892_cmac23.todolist (userid, title, grp, listitem, fromUser, toUser, completed) VALUES('" + list.userId + "', '" + list.title + "', '" + list.group + "', '" + list.listItem + "','" + list.fromUser + "', '" + list.toUser + "', '" + list.completed + "');";
+
+            noResult(query);
+
+            return new ContentResult { Content = "{\"text\": \"Entry sent\"}", StatusCode = 200, ContentType = "application/json" };
+        }
+
+        public static ToDoListArray toDoLists(ToDoList user)
+        {
+            var toDoListList = new List<ToDoList>();
+            ToDoListArray listArray = new ToDoListArray();
+
+            ConnectionService.OpenConnection();
+
+            string query = "SELECT * FROM db_a84892_cmac23.plannerevent WHERE userid = " + user.userId + " OR toUser = (SELECT username FROM db_a84892_cmac23.account WHERE userid = " + user.userId + ")";
+
+            var results = new MySqlCommand(query, ConnectionService.connection);
+            var reader = results.ExecuteReader();
+
+            while (reader.Read())
+            {
+                string reminder = null;
+                string date = ((DateTime)reader[5]).ToString("yyyy-MM-dd HH:mm:ss");
+                if (!DBNull.Value.Equals(reader[7]))
+                    reminder = ((DateTime)reader[7]).ToString("yyyy-MM-dd HH:mm:ss");
+                toDoListList.Add(new ToDoList { listId = (int)reader[0], userId = (int)reader[1], title = (string)reader[2], group = (string)reader[3], listItem = (string)reader[4], fromUser = (string)reader[5], toUser = (string)reader[6], completed = (int)reader[7] });
+            }
+
+            reader.Close();
+
+            ConnectionService.CloseConnection();
+
+            listArray.listArray = toDoListList.ToArray();
+
+            return listArray;
+        }
+
         public static RewardArray getRewards(RewardItem user)
         {
             var rewardList = new List<RewardItem>();

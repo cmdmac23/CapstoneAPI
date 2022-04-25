@@ -128,14 +128,31 @@ namespace CapstoneAPI_new.Controllers
         //  TO DO LIST MANAGEMENT
         // ------------------------------------------------------------
 
+        [HttpPost("todolist/lists/add")]
+        public object addToDoList([FromBody] ToDoList query)
+        {
+            return DatabaseService.newToDoList(query);
+        }
 
+
+        [HttpPost("todolist/lists")]
+        public object getToDoList([FromBody] ToDoList user)
+        {
+            var toDoListArray = new ToDoListArray();
+
+            toDoListArray = DatabaseService.toDoLists(user);
+
+            var json = JsonSerializer.Serialize(toDoListArray);
+
+            return new ContentResult { Content = json, StatusCode = 200, ContentType = "text/json" };
+        }
 
 
 
         //-------------------------------------------------------------
         //  TO DO LIST MANAGEMENT
         // ------------------------------------------------------------
-        
+
         [HttpPost("rewards/unlock")]
         public object unlockReward([FromBody] RewardItem rewardInfo)
         {
