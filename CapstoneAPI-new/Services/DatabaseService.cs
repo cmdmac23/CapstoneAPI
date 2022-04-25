@@ -91,8 +91,12 @@ namespace CapstoneAPI_new.Services
 
                 mail.From = new MailAddress("infocusapplication@gmail.com");
                 mail.To.Add(user.email);
-                mail.Subject = "Forgot Password";
-                mail.Body = "The password for your account is:   " + password;
+                mail.Subject = "inFocus: Forgot Password";
+                mail.IsBodyHtml = true;
+
+                string body = "<a href=\"http://cmac23-001-site1.etempurl.com/reset\">Click here to reset your password for inFocus</a>";
+
+                mail.Body = body;
 
                 SmtpServer.Port = 587;
                 SmtpServer.Credentials = new System.Net.NetworkCredential("infocusapplication", "Zbn5+9KNhj");
