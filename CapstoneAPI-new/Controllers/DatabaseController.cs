@@ -69,6 +69,12 @@ namespace CapstoneAPI_new.Controllers
             return DatabaseService.updatePassword(user);
         }
 
+        [HttpPost("user/resetpassword")]
+        public object resetPassword([FromBody] UserLogin user)
+        {
+            return DatabaseService.resetPassword(user);
+        }
+
         [HttpPost("user/update/points")]
         public object updatePoints([FromBody] Response user)
         {

@@ -68,6 +68,7 @@ namespace CapstoneAPI_new.DTOs
         public string fromUser { get; set; }
         public string toUser { get; set; }
         public int completed { get; set; }
+        public ToDoListItem[] listItemArray { get; set; }
     }
 
     public class ToDoListItem

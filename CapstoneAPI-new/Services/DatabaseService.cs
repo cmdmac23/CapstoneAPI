@@ -17,6 +17,8 @@ namespace CapstoneAPI_new.Services
 
             ConnectionService.OpenConnection();
 
+            string encryptedPass = HelperService.encryptPassword(user.password);
+
             string query = "SELECT * FROM db_a84892_cmac23.account WHERE username = '" + user.username + "'";
             var results = new MySqlCommand(query, ConnectionService.connection);
             var reader = results.ExecuteReader();
@@ -29,7 +31,7 @@ namespace CapstoneAPI_new.Services
             {
                 reader.Read();
 
-                if (reader.GetString(2) == user.password)
+                if (reader.GetString(2) == encryptedPass)
                 {
                     int userId = reader.GetInt16(0);
                     result = new ContentResult { Content = "{\"text\": \"Successful login\", \"userid\": " + userId + ", \"points\": " + reader.GetInt16(4) + "}", StatusCode = 200, ContentType = "application/json" };
@@ -47,6 +49,8 @@ namespace CapstoneAPI_new.Services
         {
             var result = new ContentResult { Content = "{\"text\": \"That username is already taken\"}", StatusCode = 200, ContentType = "application/json" };
 
+            string encryptedPass = HelperService.encryptPassword(user.password);
+
             ConnectionService.OpenConnection();
 
             string query = "SELECT * FROM db_a84892_cmac23.account WHERE username = '" + user.username + "'";
@@ -57,7 +61,7 @@ namespace CapstoneAPI_new.Services
             {
                 if (HelperService.isEmail(user.email))
                 {
-                    query = "INSERT INTO db_a84892_cmac23.account (username, password, email) VALUES ('" + user.username + "', '" + user.password + "', '" + user.email + "')";
+                    query = "INSERT INTO db_a84892_cmac23.account (username, password, email) VALUES ('" + user.username + "', '" + encryptedPass + "', '" + user.email + "')";
                     noResult(query);
                     result =  new ContentResult { Content = "{\"text\": \"Account created\"}", StatusCode = 200, ContentType = "application/json" };
                 }
@@ -84,7 +88,6 @@ namespace CapstoneAPI_new.Services
             if (reader.HasRows)
             {
                 reader.Read();
-                string password = reader.GetString(0);
 
                 MailMessage mail = new MailMessage();
                 SmtpClient SmtpServer = new SmtpClient("smtp.gmail.com");
@@ -117,6 +120,8 @@ namespace CapstoneAPI_new.Services
         {
             var result = new ContentResult { Content = "{\"text\": \"Incorrect password\"}", StatusCode = 200, ContentType = "application/json" };
 
+            string encryptedPass = HelperService.encryptPassword(user.password);
+
             ConnectionService.OpenConnection();
 
             string query = "SELECT password FROM db_a84892_cmac23.account WHERE userid = " + user.userId;
@@ -127,7 +132,7 @@ namespace CapstoneAPI_new.Services
             {
                 reader.Read();
 
-                if (reader.GetString(0) == user.password)
+                if (reader.GetString(0) == encryptedPass)
                 {
                     reader.Close();
 
@@ -149,6 +154,8 @@ namespace CapstoneAPI_new.Services
         {
             var result = new ContentResult { Content = "{\"text\": \"Incorrect password\"}", StatusCode = 200, ContentType = "application/json" };
 
+            string encryptedPass = HelperService.encryptPassword(user.password);
+
             ConnectionService.OpenConnection();
 
             string query = "SELECT password FROM db_a84892_cmac23.account WHERE userid = " + user.userId;
@@ -159,7 +166,7 @@ namespace CapstoneAPI_new.Services
             {
                 reader.Read();
 
-                if (reader.GetString(0) == user.password)
+                if (reader.GetString(0) == encryptedPass)
                 {
                     reader.Close();
 
@@ -181,6 +188,9 @@ namespace CapstoneAPI_new.Services
         {
             var result = new ContentResult { Content = "{\"text\": \"Incorrect password\"}", StatusCode = 200, ContentType = "application/json" };
 
+            string encryptedPass = HelperService.encryptPassword(user.password);
+            string encryptedPassNew = HelperService.encryptPassword(user.newPassword);
+
             ConnectionService.OpenConnection();
 
             string query = "SELECT password FROM db_a84892_cmac23.account WHERE userid = " + user.userId;
@@ -191,11 +201,11 @@ namespace CapstoneAPI_new.Services
             {
                 reader.Read();
 
-                if (reader.GetString(0) == user.password)
+                if (reader.GetString(0) == encryptedPass)
                 {
                     reader.Close();
 
-                    query = "UPDATE db_a84892_cmac23.account SET password = '" + user.newPassword + "' WHERE userid = " + user.userId;
+                    query = "UPDATE db_a84892_cmac23.account SET password = '" + encryptedPassNew + "' WHERE userid = " + user.userId;
                     results = new MySqlCommand(query, ConnectionService.connection);
                     results.ExecuteReader();
 
@@ -206,6 +216,18 @@ namespace CapstoneAPI_new.Services
             }
 
             ConnectionService.CloseConnection();
+            return result;
+        }
+
+        public static object resetPassword(UserLogin user)
+        {
+            var result = new ContentResult { Content = "{\"text\": \"Password updated\"}", StatusCode = 200, ContentType = "application/json" };
+
+            string encryptedPass = HelperService.encryptPassword(user.password);
+
+            string query = "UPDATE db_a84892_cmac23.account SET password = '" + encryptedPass + "' WHERE email = '" + user.email + "'";
+            noResult(query);
+
             return result;
         }
 
@@ -337,6 +359,36 @@ namespace CapstoneAPI_new.Services
             return new ContentResult { Content = "{\"text\": \"Entry sent\"}", StatusCode = 200, ContentType = "application/json" };
         }
 
+        public static object newToDoListFull(ToDoList list)
+        {
+            string query = null;
+
+            // insert initial todolist object into database
+            query = "INSERT INTO db_a84892_cmac23.todolist (userid, title, grp, listitem, fromUser, toUser, completed) VALUES('" + list.userId + "', '" + list.title + "', '" + list.group + "', '" + list.listItem + "','" + list.fromUser + "', '" + list.toUser + "', '" + list.completed + "');";
+            noResult(query);
+
+            ConnectionService.OpenConnection();
+            query = "SELECT listid FROM db_a84892_cmac23.todolist WHERE userid = " + list.userId + " ORDER BY listid DESC LIMIT 1";
+            var results = new MySqlCommand(query, ConnectionService.connection);
+            var reader = results.ExecuteReader();
+            
+            // get listid of the entry you just created
+            reader.Read();
+            list.listId = reader.GetInt32(0);
+            reader.Close();
+
+            ConnectionService.CloseConnection();
+
+            // add each list item into table
+            foreach(ToDoListItem item in list.listItemArray)
+            {
+                query = "INSERT INTO db_a84892_cmac23.todolistitem (listid, itemname, difficulty, completed) VALUES VALUES (" + list.listId + ", '" + item.itemName + "', " + item.difficulty + ", " + item.completed + ")";
+                noResult(query);
+            }
+
+            return new ContentResult { Content = "{\"text\": \"Entry sent\"}", StatusCode = 200, ContentType = "application/json" };
+        }
+
         public static ToDoListArray toDoLists(ToDoList user)
         {
             var toDoListList = new List<ToDoList>();
@@ -344,17 +396,13 @@ namespace CapstoneAPI_new.Services
 
             ConnectionService.OpenConnection();
 
-            string query = "SELECT * FROM db_a84892_cmac23.plannerevent WHERE userid = " + user.userId + " OR toUser = (SELECT username FROM db_a84892_cmac23.account WHERE userid = " + user.userId + ")";
+            string query = "SELECT * FROM db_a84892_cmac23.todolist WHERE userid = " + user.userId + " OR toUser = (SELECT username FROM db_a84892_cmac23.account WHERE userid = " + user.userId + ")";
 
             var results = new MySqlCommand(query, ConnectionService.connection);
             var reader = results.ExecuteReader();
 
             while (reader.Read())
             {
-                string reminder = null;
-                string date = ((DateTime)reader[5]).ToString("yyyy-MM-dd HH:mm:ss");
-                if (!DBNull.Value.Equals(reader[7]))
-                    reminder = ((DateTime)reader[7]).ToString("yyyy-MM-dd HH:mm:ss");
                 toDoListList.Add(new ToDoList { listId = (int)reader[0], userId = (int)reader[1], title = (string)reader[2], group = (string)reader[3], listItem = (string)reader[4], fromUser = (string)reader[5], toUser = (string)reader[6], completed = (int)reader[7] });
             }
 
