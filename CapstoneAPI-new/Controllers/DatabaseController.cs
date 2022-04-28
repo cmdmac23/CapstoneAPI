@@ -1,4 +1,4 @@
-﻿using CapstoneAPI_new.DTOs;
+using CapstoneAPI_new.DTOs;
 using CapstoneAPI_new.Services;
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
@@ -140,6 +140,11 @@ namespace CapstoneAPI_new.Controllers
             return DatabaseService.newToDoListFull(query);
         }
 
+        [HttpPost("todolist/lists/update")]
+        public object updateToDoList([FromBody] ToDoList query)
+        {
+            return DatabaseService.updateToDoList(query);
+        }
 
         [HttpPost("todolist/lists")]
         public object getToDoList([FromBody] ToDoList user)
