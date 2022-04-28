@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -387,6 +387,36 @@ namespace CapstoneAPI_new.Services
             }
 
             return new ContentResult { Content = "{\"text\": \"Entry sent\"}", StatusCode = 200, ContentType = "application/json" };
+        }
+
+        public static object updateToDoList(ToDoList list)
+        {
+            string query = null;
+
+            // insert initial todolist object into database
+            query = "UPDATE db_a84892_cmac23.todolist SET userid = " + list.userId + ", title = '" + list.title + "', grp = '" + list.group + "', listitem = '" + list.listItem + "', fromUser = '" + list.fromUser + "', toUser = '" + list.toUser + "', completed = " + list.completed + " WHERE listId = " + list.listId;
+            noResult(query);
+
+            ConnectionService.OpenConnection();
+            query = "SELECT listid FROM db_a84892_cmac23.todolist WHERE userid = " + list.userId + " ORDER BY listid DESC LIMIT 1";
+            var results = new MySqlCommand(query, ConnectionService.connection);
+            var reader = results.ExecuteReader();
+
+            // get listid of the entry you just created
+            reader.Read();
+            list.listId = reader.GetInt32(0);
+            reader.Close();
+
+            ConnectionService.CloseConnection();
+
+            // add each list item into table
+            foreach (ToDoListItem item in list.listItemArray)
+            {
+                query = "UPDATE db_a84892_cmac23.todolistitem SET userid = " + item.userId + ", listId = '" + item.listId + "', itemName = '" + item.itemName + "', difficulty = '" + item.difficulty + "', completed = " + item.completed + " WHERE listItemId = " + item.listItemId;
+                noResult(query);
+            }
+
+            return new ContentResult { Content = "{\"text\": \"Update sent\"}", StatusCode = 200, ContentType = "application/json" };
         }
 
         public static ToDoListArray toDoLists(ToDoList user)
