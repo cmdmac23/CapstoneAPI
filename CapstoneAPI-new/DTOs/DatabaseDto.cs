@@ -75,6 +75,7 @@ namespace CapstoneAPI_new.DTOs
     {
         public int listItemId { get; set; }
         public int listId { get; set; }
+        public int userId { get; set; }
         public string itemName { get; set; }
         public int difficulty { get; set; }
         public int completed { get; set; }

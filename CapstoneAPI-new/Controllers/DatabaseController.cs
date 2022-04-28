@@ -137,7 +137,7 @@ namespace CapstoneAPI_new.Controllers
         [HttpPost("todolist/lists/add")]
         public object addToDoList([FromBody] ToDoList query)
         {
-            return DatabaseService.newToDoList(query);
+            return DatabaseService.newToDoListFull(query);
         }
 
 
@@ -151,6 +151,14 @@ namespace CapstoneAPI_new.Controllers
             var json = JsonSerializer.Serialize(toDoListArray);
 
             return new ContentResult { Content = json, StatusCode = 200, ContentType = "text/json" };
+        }
+
+        [HttpPost("todolist/lists/complete")]
+        public object updateToDoCompleted([FromBody] ToDoListItem toDoItem)
+        {
+            DatabaseService.updateToDoCompletion(toDoItem.listItemId, toDoItem.completed, toDoItem.difficulty, toDoItem.userId);
+
+            return new OkResult();
         }
 
 

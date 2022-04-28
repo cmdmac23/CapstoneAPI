@@ -364,7 +364,7 @@ namespace CapstoneAPI_new.Services
             string query = null;
 
             // insert initial todolist object into database
-            query = "INSERT INTO db_a84892_cmac23.todolist (userid, title, grp, listitem, fromUser, toUser, completed) VALUES('" + list.userId + "', '" + list.title + "', '" + list.group + "', '" + list.listItem + "','" + list.fromUser + "', '" + list.toUser + "', '" + list.completed + "');";
+            query = "INSERT INTO db_a84892_cmac23.todolist (userid, title, grp, listitem, fromUser, toUser, completed) VALUES ('" + list.userId + "', '" + list.title + "', '" + list.group + "', '" + list.listItem + "','" + list.fromUser + "', '" + list.toUser + "', '" + list.completed + "');";
             noResult(query);
 
             ConnectionService.OpenConnection();
@@ -382,7 +382,7 @@ namespace CapstoneAPI_new.Services
             // add each list item into table
             foreach(ToDoListItem item in list.listItemArray)
             {
-                query = "INSERT INTO db_a84892_cmac23.todolistitem (listid, itemname, difficulty, completed) VALUES VALUES (" + list.listId + ", '" + item.itemName + "', " + item.difficulty + ", " + item.completed + ")";
+                query = "INSERT INTO db_a84892_cmac23.todolistitem (listid, itemname, difficulty, completed) VALUES (" + list.listId + ", '" + item.itemName + "', " + item.difficulty + ", " + item.completed + ")";
                 noResult(query);
             }
 
@@ -392,6 +392,7 @@ namespace CapstoneAPI_new.Services
         public static ToDoListArray toDoLists(ToDoList user)
         {
             var toDoListList = new List<ToDoList>();
+            var toDoListItemList = new List<ToDoListItem>();
             ToDoListArray listArray = new ToDoListArray();
 
             ConnectionService.OpenConnection();
@@ -403,16 +404,38 @@ namespace CapstoneAPI_new.Services
 
             while (reader.Read())
             {
-                toDoListList.Add(new ToDoList { listId = (int)reader[0], userId = (int)reader[1], title = (string)reader[2], group = (string)reader[3], listItem = (string)reader[4], fromUser = (string)reader[5], toUser = (string)reader[6], completed = (int)reader[7] });
+                toDoListList.Add(new ToDoList { listId = (int)reader[0], userId = (int)reader[1], title = (string)reader[2], group = (string)reader[3], fromUser = (string)reader[5], toUser = (string)reader[6], completed = (int)reader[7] });
             }
 
             reader.Close();
+
+            foreach(ToDoList listHeader in toDoListList)
+            {
+                query = "SELECT * FROM db_a84892_cmac23.todolistitem WHERE listid = " + listHeader.listId;
+                results = new MySqlCommand(query, ConnectionService.connection);
+                reader = results.ExecuteReader();
+                while (reader.Read())
+                {
+                    toDoListItemList.Add(new ToDoListItem { listItemId = (int)reader[0], listId = (int)reader[1], itemName = (string)reader[2], difficulty = (int)reader[3], completed = (int)reader[4] });
+                }
+                reader.Close();
+                listHeader.listItemArray = toDoListItemList.ToArray();
+                toDoListItemList.Clear();
+            }
 
             ConnectionService.CloseConnection();
 
             listArray.listArray = toDoListList.ToArray();
 
             return listArray;
+        }
+
+        public static void updateToDoCompletion(int listItemId, int completed, int points, int userid)
+        {
+            string query1 = "UPDATE db_a84892_cmac23.todolistitem SET completed = " + completed + " WHERE listitemid = " + listItemId + "; ";
+            string query2 = "UPDATE db_a84892_cmac23.account SET points = " + points + " WHERE userid = " + userid;
+
+            noResult(query1 + query2);
         }
 
         public static RewardArray getRewards(RewardItem user)
